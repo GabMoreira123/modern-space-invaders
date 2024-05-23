@@ -5,4 +5,8 @@ class InvaderProjecttile{
         this.width =3;
         this.height = 10;
    }
+   draw(){
+    c.fillstyle = "white";
+    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+   }
 }
