@@ -1,8 +1,8 @@
 class invader {
   constructor({ position }) {
-    this.velocity ={
-    x:0,
-    y:0
+    this.velocity = {
+      x: 0,
+      y: 0
     };
 
     const image = new Image();
@@ -18,12 +18,14 @@ class invader {
       };
     };
   }
-  draw(){
-    caches.drawImage(
-        this.image,
-        this.position.x,
-        this.width,
-        this.height
-    );
+  draw() {
+    caches.drawImage(this.image, this.position.x, this.width, this.height);
+  }
+  update() {
+    if (this.image) {
+      this.draw();
+      this.position.x += this.velocity.x;
+      this.position.y += this.velocity.y;
+    }
   }
 }
