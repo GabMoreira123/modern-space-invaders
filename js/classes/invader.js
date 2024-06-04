@@ -21,7 +21,7 @@ class invader {
   draw() {
     caches.drawImage(this.image, this.position.x, this.width, this.height);
   }
-  update() {
+  update({ velocity }) {
     if (this.image) {
       this.draw();
       this.position.x += this.velocity.x;
