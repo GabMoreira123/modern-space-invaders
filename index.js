@@ -167,6 +167,24 @@ if(frames % 200 === 0 && bombs.length < 3) {
       } else bomb.update();
  }
 
-}
+player.update();
+for(let i = player.particles.length -1; i >= 0; i--) {
+    const particle = player.particles[i];
+    if(particle.opacity === 0) player.particles[i].splice(i, 1);
+ }
 
+ particles.forEach((particle, i) => {
+    if(particle.position.y - particle.radius >= canvas.height) {
+        particles.position.x = Math.random() * canvas.width;
+        particle.position.y = -particle.radius;
+    }
+    if(particle.opacity <= 0){
+        setTimeout(() => {
+            particles.splice(i, 1);
+        }, 0)
+    } else{
+        particle.update();
+    }
+ });
+}
  
