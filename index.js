@@ -205,7 +205,7 @@ for(let i = player.particles.length -1; i >= 0; i--) {
             })
         ){
             invaderProjectiles.splice(index, 1);
-            endeGame();
+            endGame();
         }
   });
     
