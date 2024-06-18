@@ -88,7 +88,7 @@ function init() {
   }
 }
 
-function endeGame() {
+function endGame() {
   audio.gameOver.play();
   setTimeout(() => {
     player.opacity = 0;
@@ -254,33 +254,27 @@ function animate() {
   grids.forEach((grid, gridIndex) => {
     grid.update();
 
-    if(frames % 100 === 0 && grid.invaders.length > 0) {
-      grid.invaders[Math.floor(Math.random() * grid.invaders.length)].
-      shoot(
-         invaderProjectiles
+    if (frames % 100 === 0 && grid.invaders.length > 0) {
+      grid.invaders[Math.floor(Math.random() * grid.invaders.length)].shoot(
+        invaderProjectiles
       );
     }
 
-    for(let i = grid.invaders.length - 1; i >= 0; i) {
+    for (let i = grid.invaders.length - 1; i >= 0; i) {
       const invader = grid.invaders[i];
-      invader.update({velocity: grid.velocity });
+      invader.update({ velocity: grid.velocity });
 
-      for(let j = bombs.length -1; j >= 0; j--) {
+      for (let j = bombs.length - 1; j >= 0; j--) {
         const bomb = bombs[j];
 
         const invaderRadius = 15;
 
-
-
-
-
-
-        if(
+        if (
           Math.hypot(
             invader.position.x - bomb.position.x,
             invader.position.y - bomb.position.y
           ) <
-          invaderRadius + bomb.radius &&
+            invaderRadius + bomb.radius &&
           bomb.active //ponto de exclamação para tornar true em false
         ) {
           score += 50;
@@ -292,50 +286,71 @@ function animate() {
             score: 50
           });
 
-
           createParticles({
             object: invader,
             fades: true
           });
-          
         }
       }
-      projectiles.forEach((projectile) => {
-       if(
-        projectile.position.y - projectile.radius <=
-         invader.position.y + invader.height &&
-        projectile.position.x + projectile.radius >= invader.position.x &&
-        projectile.position.x - projectile.radius <=
-         invader.position.x + invader.width &&
-        projectile.position.y + projectile.radius >= invader.position.y
-       ) {
-        setTimeout(() => {
-          const invaderFound = grid.invader.find(
-          (invader2) => invader2 === invader
-          );
-          const projectileFound = projectiles.find(
-            (projectile2) => projectile2 === projectile
-          );
-          if(invaderFound && projectileFound){
-            score += 100;
-            scoreEl.innerHTML = score;
+      projectiles.forEach((projectile, j) => {
+        if (
+          projectile.position.y - projectile.radius <=
+            invader.position.y + invader.height &&
+          projectile.position.x + projectile.radius >= invader.position.x &&
+          projectile.position.x - projectile.radius <=
+            invader.position.x + invader.width &&
+          projectile.position.y + projectile.radius >= invader.position.y
+        ) {
+          setTimeout(() => {
+            const invaderFound = grid.invader.find(
+              (invader2) => invader2 === invader
+            );
+            const projectileFound = projectiles.find(
+              (projectile2) => projectile2 === projectile
+            );
+            if (invaderFound && projectileFound) {
+              score += 100;
+              scoreEl.innerHTML = score;
 
-            createScoreLabel({
-              object: invader,
-            });
+              createScoreLabel({
+                object: invader
+              });
 
-            cerateParticles({
-              object: invader,
-              fades: true
-            });
+              createParticles({
+                object: invader,
+                fades: true
+              });
 
-            audio.explode.play();
-            grid.invaders.splice(i, 1);
-            projectiles.splice(j, 1);
-          }
-       })
-      }
-      })
+              audio.explode.play();
+              grid.invaders.splice(i, 1);
+              projectiles.splice(j, 1);
+
+              if (grid.invaders.length > 0) {
+                const firstInvader = grid.invaders[0]; //está recebendo o primeiro invasor
+                const lastInvader = grid.invaders[grid.invaders.length - 1]; //está recebendo o ultimo invasor
+
+                grid.width =
+                  lastInvader.position.x -
+                  firstInvader.position.x +
+                  firstInvader.width;
+
+                grid.position.x = firstInvader.position.x;
+              } else {
+                grids.splice(gridIndex, 1); //Serve para remover os elementos
+              }
+            }
+          }, 0);
+        }
+      });
+      if (
+        rectangularCollision({
+          rectangle1: invader,
+          rectangle2: player
+        }) &&
+        !game.over
+      ) 
+        endGame();
     }
+    
   });
 }
