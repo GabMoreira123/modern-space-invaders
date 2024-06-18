@@ -353,4 +353,18 @@ function animate() {
     }
     
   });
+
+  if(keys.ArrowLeft.pressed && player.position.x >= 0) {
+    player.velocity.x = -7;
+    player.rotation.x = -0.15;  //Pode alterar a velocidade do jogo, desafio
+    } else if(
+      keys.ArrowRight.pressed &&
+      player.position.x + player.width < canvas.width
+    ) {
+      player.velocity.x = 7;
+      player.rotation.x = 0.15;
+    } else {
+      player.velocity.x = 0;
+      player.rotation.x = 0;  // O PLAYER ESTA PARADO
+    }
 }
