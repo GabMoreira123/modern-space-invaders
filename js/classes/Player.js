@@ -10,9 +10,9 @@ class Player {
 
     const image = new Image();
 
-    image.src = "./img/tiringaa.png";
+    image.src = "./img/spaceship.png";
     image.onload = () => {
-      const scale = 0.70;
+      const scale = 0.3;
       this.image = image;
       this.width = image.width * scale;
       this.height = image.height * scale;
