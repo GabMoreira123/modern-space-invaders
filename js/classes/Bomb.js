@@ -1,9 +1,10 @@
 class Bomb {
+  static radius = 30;
   constructor({ position, velocity }) {
     this.position = position;
     this.velocity = velocity;
-    this.radius = 10;
-    this.color = " ";
+    this.radius = 0;
+    this.color = "red";
     this.opacity = 1;
     this.active = false;
 
@@ -39,15 +40,18 @@ class Bomb {
     )
       this.velocity.y = -this.velocity.y;
   }
+
   explode() {
     audio.bomb.play();
     this.active = true;
     this.velocity.x = 0;
     this.velocity.y = 0;
+
     gsap.to(this, {
       radius: 200,
       color: "red"
     });
+
     gsap.to(this, {
       delay: 0.1,
       opacity: 0,
@@ -55,12 +59,14 @@ class Bomb {
     });
   }
 }
+
 class PowerUp {
   constructor({ position, velocity }) {
     this.position = position;
     this.velocity = velocity;
     this.radius = 15;
   }
+
   draw() {
     c.beginPath();
     c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);

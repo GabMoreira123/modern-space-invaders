@@ -1,18 +1,17 @@
-const scoreEl = document.querySelector("#scoreEl"); // o hashtag significa id
+const scoreEl = document.querySelector("#scoreEl");
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 
-canvas.width = 1024; //canvas é responsavel por renderizar o jogo
+canvas.width = 1024;
 canvas.height = 576;
 
-let projectiles = []; //declaro um arreio, pode suportar vários dados juntos
-let grids = []; //grid significa
+let player = new Player();
+let projectiles = [];
+let grids = [];
 let invaderProjectiles = [];
 let particles = [];
 let bombs = [];
 let powerUps = [];
-
-let player = new Player(); // a tag new Player é um novo jogador, estamos instanciando o mesmo
 
 let keys = {
   ArrowLeft: {
@@ -21,13 +20,13 @@ let keys = {
   ArrowRight: {
     pressed: false
   },
-  Space: {
+  space: {
     pressed: false
   }
-}; // assim que inicia-se uma classe com colchetes {}
+};
 
-let frames = 0; // É responsável pelos Frames por Segundo
-let randomInterval = Math.floor(Math.random() * 500 + 500); // A função Math.floor arredonda os valores, para não dar números quebrados
+let frames = 0;
+let randomInterval = Math.floor(Math.random() * 500 + 500);
 
 let game = {
   over: false,
@@ -35,10 +34,9 @@ let game = {
 };
 
 let score = 0;
-let spawnBuffer = 500; // Aqui altera a quantidade de tempo de spawn de inimigos
-let fps = 60; // variavel responsável pelo carregamento dos quadros por segundo
-let fpsInterval = 1000 / fps; // tempst 2020 13:56, trincheiras
-
+let spawnBuffer = 500;
+let fps = 60;
+let fpsInterval = 1000 / fps;
 let msPrev = window.performance.now();
 
 function init() {
@@ -49,7 +47,6 @@ function init() {
   particles = [];
   bombs = [];
   powerUps = [];
-  frames = 0;
 
   keys = {
     ArrowLeft: {
@@ -58,21 +55,23 @@ function init() {
     ArrowRight: {
       pressed: false
     },
-    Space: {
+    space: {
       pressed: false
     }
   };
-  randomInterval = Math.floor(Math.random() * 500 + 500);
 
+  frames = 0;
+  randomInterval = Math.floor(Math.random() * 500 + 500);
   game = {
     over: false,
     active: true
   };
+
   score = 0;
 
   for (let i = 0; i < 100; i++) {
     particles.push(
-      new particles({
+      new Particle({
         position: {
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height
@@ -90,6 +89,7 @@ function init() {
 
 function endGame() {
   audio.gameOver.play();
+
   setTimeout(() => {
     player.opacity = 0;
     game.over = true;
@@ -111,16 +111,19 @@ function animate() {
   if (!game.active) return;
   requestAnimationFrame(animate);
 
-  let msNow = window.performance.now();
-  let elapsed = msNow - msPrev;
+  const msNow = window.performance.now();
+  const elapsed = msNow - msPrev;
 
   if (elapsed < fpsInterval) return;
+
   msPrev = msNow - (elapsed % fpsInterval);
 
-  c.fillStyle = "black"; // função que pode ser alterada
+  c.fillStyle = "black";
   c.fillRect(0, 0, canvas.width, canvas.height);
+
   for (let i = powerUps.length - 1; i >= 0; i--) {
     const powerUp = powerUps[i];
+
     if (powerUp.position.x - powerUp.radius >= canvas.width)
       powerUps.splice(i, 1);
     else powerUp.update();
@@ -158,6 +161,7 @@ function animate() {
 
   for (let i = bombs.length - 1; i >= 0; i--) {
     const bomb = bombs[i];
+
     if (bomb.opacity <= 0) {
       bombs.splice(i, 1);
     } else bomb.update();
@@ -167,14 +171,17 @@ function animate() {
 
   for (let i = player.particles.length - 1; i >= 0; i--) {
     const particle = player.particles[i];
+    particle.update();
+
     if (particle.opacity === 0) player.particles[i].splice(i, 1);
   }
 
   particles.forEach((particle, i) => {
     if (particle.position.y - particle.radius >= canvas.height) {
-      particles.position.x = Math.random() * canvas.width;
+      particle.position.x = Math.random() * canvas.width;
       particle.position.y = -particle.radius;
     }
+
     if (particle.opacity <= 0) {
       setTimeout(() => {
         particles.splice(i, 1);
@@ -192,9 +199,8 @@ function animate() {
       setTimeout(() => {
         invaderProjectiles.splice(index, 1);
       }, 0);
-    } else {
-      invaderProjectile.update();
-    }
+    } else invaderProjectile.update();
+
     if (
       rectangularCollision({
         rectangle1: invaderProjectile,
@@ -211,21 +217,23 @@ function animate() {
 
     for (let j = bombs.length - 1; j >= 0; j--) {
       const bomb = bombs[j];
+
       if (
         Math.hypot(
           projectile.position.x - bomb.position.x,
           projectile.position.y - bomb.position.y
         ) <
           projectile.radius + bomb.radius &&
-        !bomb.active //ponto de exclamação para tornar true em false
+        !bomb.active
       ) {
-        projectiles.splice(i, 1); // Vai remover o projeto do index projeteis
+        projectiles.splice(i, 1);
         bomb.explode();
       }
     }
 
     for (let j = powerUps.length - 1; j >= 0; j--) {
       const powerUp = powerUps[j];
+
       if (
         Math.hypot(
           projectile.position.x - powerUp.position.x,
@@ -260,7 +268,7 @@ function animate() {
       );
     }
 
-    for (let i = grid.invaders.length - 1; i >= 0; i) {
+    for (let i = grid.invaders.length - 1; i >= 0; i--) {
       const invader = grid.invaders[i];
       invader.update({ velocity: grid.velocity });
 
@@ -275,7 +283,7 @@ function animate() {
             invader.position.y - bomb.position.y
           ) <
             invaderRadius + bomb.radius &&
-          bomb.active //ponto de exclamação para tornar true em false
+          bomb.active
         ) {
           score += 50;
           scoreEl.innerHTML = score;
@@ -292,6 +300,7 @@ function animate() {
           });
         }
       }
+
       projectiles.forEach((projectile, j) => {
         if (
           projectile.position.y - projectile.radius <=
@@ -302,12 +311,13 @@ function animate() {
           projectile.position.y + projectile.radius >= invader.position.y
         ) {
           setTimeout(() => {
-            const invaderFound = grid.invader.find(
+            const invaderFound = grid.invaders.find(
               (invader2) => invader2 === invader
             );
             const projectileFound = projectiles.find(
               (projectile2) => projectile2 === projectile
             );
+
             if (invaderFound && projectileFound) {
               score += 100;
               scoreEl.innerHTML = score;
@@ -326,95 +336,141 @@ function animate() {
               projectiles.splice(j, 1);
 
               if (grid.invaders.length > 0) {
-                const firstInvader = grid.invaders[0]; //está recebendo o primeiro invasor
-                const lastInvader = grid.invaders[grid.invaders.length - 1]; //está recebendo o ultimo invasor
+                const firstInvader = grid.invaders[0];
+                const lastInvader = grid.invaders[grid.invaders.length - 1];
 
                 grid.width =
                   lastInvader.position.x -
                   firstInvader.position.x +
-                  firstInvader.width;
-
+                  lastInvader.width;
                 grid.position.x = firstInvader.position.x;
               } else {
-                grids.splice(gridIndex, 1); //Serve para remover os elementos
+                grids.splice(gridIndex, 1);
               }
             }
           }, 0);
         }
       });
+
       if (
         rectangularCollision({
           rectangle1: invader,
           rectangle2: player
         }) &&
         !game.over
-      ) 
+      )
         endGame();
     }
-    
   });
 
-  if(keys.ArrowLeft.pressed && player.position.x >= 0) {
+  if (keys.ArrowLeft.pressed && player.position.x >= 0) {
     player.velocity.x = -7;
-    player.rotation.x = -0.15;  //Pode alterar a velocidade do jogo, desafio
-    } else if(
-      keys.ArrowRight.pressed &&
-      player.position.x + player.width < canvas.width
-    ) {
-      player.velocity.x = 7;
-      player.rotation.x = 0.15;
-    } else {
-      player.velocity.x = 0;
-      player.rotation.x = 0;  // O PLAYER ESTA PARADO
-    }
+    player.rotation = -0.15;
+  } else if (
+    keys.ArrowRight.pressed &&
+    player.position.x + player.width <= canvas.width
+  ) {
+    player.velocity.x = 7;
+    player.rotation = 0.15;
+  } else {
+    player.velocity.x = 0;
+    player.rotation = 0;
+  }
 
-    if(frames % randomInterval === 0) {
-      spawnBuffer = spawnBuffer < 0 ? 100: spawnBuffer; // É uma verificação ternária. obs:Que beijão entre David e Silas 16:25
-      grids.push(new Grid());
-      randomInterval = Math.floor(Math.random() * 500 + spawnBuffer);
-      frames = 0;
-      spawnBuffer -= 100;
+  if (frames % randomInterval === 0) {
+    spawnBuffer = spawnBuffer < 0 ? 100 : spawnBuffer;
+    grids.push(new Grid());
+    randomInterval = Math.floor(Math.random() * 500 + spawnBuffer);
+    frames = 0;
+    spawnBuffer -= 100;
+  }
 
-    }
-     if(
-      keys.Space.pressed &&
-      player.powerUp === "Metralhadora" &&
-      frames % 2 === 0 &&
-      !game.over
-     ) {
-      if(frames % 6 === 0) audio.shoot.play();
+  if (
+    keys.space.pressed &&
+    player.powerUp === "Metralhadora" &&
+    frames % 2 === 0 &&
+    !game.over
+  ) {
+    if (frames % 6 === 0) audio.shoot.play();
+    projectiles.push(
+      new Projectile({
+        position: {
+          x: player.position.x + player.width / 2,
+          y: player.position.y
+        },
+        velocity: {
+          x: 0,
+          y: -10
+        },
+        color: "yellow"
+      })
+    );
+  }
+
+  frames++;
+}
+
+document.querySelector("#startButton").addEventListener("click", () => {
+  audio.backgroundMusic.play();
+  audio.start.play();
+
+  document.querySelector("#startScreen").style.display = "none";
+  document.querySelector("#scoreContainer").style.display = "block";
+  init();
+  animate();
+});
+
+document.querySelector("#restartButton").addEventListener("click", () => {
+  audio.select.play();
+  document.querySelector("#restartScreen").style.display = "none";
+  init();
+  animate();
+});
+
+addEventListener("keydown", ({ key }) => {
+  if (game.over) return;
+
+  switch (key) {
+    case "ArrowLeft":
+      keys.ArrowLeft.pressed = true;
+      break;
+    case "ArrowRight":
+      keys.ArrowRight.pressed = true;
+      break;
+    case " ":
+      keys.space.pressed = true;
+
+      if (player.powerUp === "Metralhadora") return;
+
+      audio.shoot.play();
       projectiles.push(
         new Projectile({
           position: {
             x: player.position.x + player.width / 2,
-            y: player.position.y 
+            y: player.position.y
           },
           velocity: {
             x: 0,
             y: -10
-          },
-          color: "yellow"
+          }
         })
-      )
-     }
+      );
 
-     frames++;
+      break;
   }
+});
 
-  document.querySelector("#startButton").addEventListener("click", () => {
-    audio.backgroundMusic.play();
-    audio.start.play();
+addEventListener("keyup", ({ key }) => {
+  switch (key) {
+    case "ArrowLeft":
+      keys.ArrowLeft.pressed = false;
+      break;
+    case "ArrowRight":
+      keys.ArrowRight.pressed = false;
+      break;
+    case " ":
+      keys.space.pressed = false;
 
-    document.querySelector("#startScreen").style.display = "none";
-    document.querySelector("#scoreContainer").style.display = "block";
-    init();
-    animate();
-  });
-
-  document.querySelector("#restartButton").addEventListener("click", () => {
-    audio.select.play();
-    document.querySelector("#restartScreen").style.display = "none";
-    init();
-    animate();
-  });
-  
+      break;
+  }
+});
